@@ -1,4 +1,4 @@
-name: Build project
+﻿name: Actions 
 
 on:
   pull_request: {}
@@ -8,7 +8,7 @@ env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
 jobs:
-  buildForSomePlatforms:
+  buildAndTestForSomePlatforms:
     name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
     runs-on: ubuntu-latest
     strategy:
@@ -19,11 +19,11 @@ jobs:
         unityVersion:
           - 2019.4.11f1
         targetPlatform:
-          - StandaloneWindows # Build a Windows standalone.
+          - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
-          - Android # Build an Android .apk standalone app.
-          - WebGL 
-
+          - StandaloneLinux64 # Build a Linux 64-bit standalone.
+          - iOS # Build an iOS player.
+          - WebGL # WebGL.
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,11 +35,21 @@ jobs:
           restore-keys: |
             Library-${{ matrix.projectPath }}-
             Library-
+      - uses: webbertakken/unity-test-runner@v1.3
+        id: testRunner
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Test results (all modes)
+          path: ${{ steps.testRunner.outputs.artifactsPath }}
       - uses: webbertakken/unity-builder@v0.10
         with:
           projectPath: ${{ matrix.projectPath }}
           unityVersion: ${{ matrix.unityVersion }}
           targetPlatform: ${{ matrix.targetPlatform }}
+          customParameters: '-myParameter myValue -myBoolean -ThirdParameter andItsValue'
       - uses: actions/upload-artifact@v1
         with:
           name: Build
