@@ -21,6 +21,8 @@ jobs:
         targetPlatform:
           - StandaloneWindows # Build a Windows standalone.
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
+          - Android # Build an Android .apk standalone app.
+          - WebGL 
 
     steps:
       - uses: actions/checkout@v2
